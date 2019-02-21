@@ -5,6 +5,7 @@ class Chromosome:
 	def __init__(self,filterNumbers,filterSizes):
 		self.filterNumbers = filterNumbers
 		self.filterSizes = filterSizes
+		self.precision = -1
 
 	def set_quality(self,quality):
 		self.precision = precision
