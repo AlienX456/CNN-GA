@@ -81,7 +81,7 @@ class Control:
 
 
 ########################################################################################
-#############JUST FOR TEXT PURPOSES######################################################
+#############JUST FOR TEST PURPOSES######################################################
 def test():
 	control = Control(4,10,2,25,10)
 	print('Config - |maxFilterChange {}|maxSizeChange {}|maxFilterNumber {}|maxFilterSize {}|'.format(10,2,25,10))
