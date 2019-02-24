@@ -32,8 +32,6 @@ class CNN:
         self.epoch_number = epoch_number
         self.num_classes = num_classes
         self.batch_size = batch_size
-        self.model = None
-        self.history = None
 
         #data variables
         self.X, self.y, self.X_train, self.X_val, self.y_train, self.y_val = None,None,None,None,None,None
@@ -62,49 +60,50 @@ class CNN:
 
     #propose a solution to the input size problem on each layer
     def training_cnn(self, num_filters, size_filters):
-        self.model = None
-        self.history = None
+        model = None
 
-        self.model = Sequential()
+        history = None
 
-        self.model.add(Conv2D(num_filters[0], kernel_size=(size_filters[0], size_filters[0]),
+        model = Sequential()
+
+        model.add(Conv2D(num_filters[0], kernel_size=(size_filters[0], size_filters[0]),
                          activation='relu',
                          kernel_initializer='he_normal',
                          input_shape=self.input_shape))
-        self.model.add(MaxPooling2D((2, 2)))
-        self.model.add(Dropout(0.25))
-        self.model.add(Conv2D(num_filters[1], (size_filters[1], size_filters[1]), activation='relu'))
-        self.model.add(MaxPooling2D(pool_size=(2, 2)))
-        self.model.add(Dropout(0.25))
-        self.model.add(Conv2D(num_filters[2], (size_filters[2], size_filters[2]), activation='relu'))
-        self.model.add(Dropout(0.4))
-        self.model.add(Flatten())
-        self.model.add(Dense(128, activation='relu'))
-        self.model.add(Dropout(0.3))
-        self.model.add(Dense(self.num_classes, activation='softmax'))
-        self.model.compile(loss=keras.losses.categorical_crossentropy,
+        model.add(MaxPooling2D((2, 2)))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(num_filters[1], (size_filters[1], size_filters[1]), activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.25))
+        model.add(Conv2D(num_filters[2], (size_filters[2], size_filters[2]), activation='relu'))
+        model.add(Dropout(0.4))
+        model.add(Flatten())
+        model.add(Dense(128, activation='relu'))
+        model.add(Dropout(0.3))
+        model.add(Dense(self.num_classes, activation='softmax'))
+        model.compile(loss=keras.losses.categorical_crossentropy,
                       optimizer=keras.optimizers.Adam(),
                       metrics=['accuracy'])
 
-        self.model.summary()
+        model.summary()
 
-        self.history = self.model.fit(self.X_train, self.y_train,
+        history = model.fit(self.X_train, self.y_train,
                   batch_size=self.batch_size,
                   epochs=self.epoch_number,
                   verbose=1,
                   validation_data=(self.X_val, self.y_val))
-        score = self.model.evaluate(self.X_test, self.y_test, verbose=0)
+        score = model.evaluate(self.X_test, self.y_test, verbose=0)
 
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
 
-        return [score[0], score[1]]
+        return [model,history]
 
-    def generate_precision_graph(self):
-        accuracy = self.history.history['acc']
-        val_accuracy = self.history.history['val_acc']
-        loss = self.history.history['loss']
-        val_loss = self.history.history['val_loss']
+    def generate_precision_graph(self, history):
+        accuracy = history.history['acc']
+        val_accuracy = history.history['val_acc']
+        loss = history.history['loss']
+        val_loss = history.history['val_loss']
         epochs = range(len(accuracy))
         plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
         plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
@@ -117,8 +116,8 @@ class CNN:
         plt.legend()
         plt.show()
 
-    def generate_classification_report(self):
-        predicted_classes = self.model.predict_classes(self.X_test)
+    def generate_classification_report(self, model):
+        predicted_classes = model.predict_classes(self.X_test)
 
         #get the indices to be plotted
         y_true = self.data_test.iloc[:, 0]

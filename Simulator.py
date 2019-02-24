@@ -1,5 +1,6 @@
 from Control import Control
 import random
+import sys
 
 class Simulator:
     def __init__(self, initialPoblation, control, num_survivors, condition_precision, condition_generations, cnn):
@@ -10,6 +11,7 @@ class Simulator:
         self.condition_generations = condition_generations
         self.num_survivors = num_survivors
         self.cnn = cnn
+        self.current_best_model = None
 
     def simulate(self):
         print('Welcome lets start the Simulation >:v ')
@@ -33,7 +35,8 @@ class Simulator:
             current_generation += 1
             print('\n','\n','\n','\n')
             print('GENERATION {} ----------------------------------------------'.format(current_generation))
-            self.individuals = self.individuals[0:self.num_survivors]
+            for individual in self.individuals[self.num_survivors:]:
+                self.individuals.remove(individual)
             #Note: verify whether the last operation deletes data or it's still on memory
             self.print_list_chromosomes(self.individuals)
 
@@ -86,13 +89,15 @@ class Simulator:
 
             #We start the evaluation (For now using a test function)
             for chromosome in self.individuals:
-                if chromosome.precision != -1:
+                if chromosome.precision == -1:
                     print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
                     print('Starting Evaluation of :')
                     print('Filter Numbers', chromosome.filterNumbers)
                     print('Filter Sizes',chromosome.filterSizes)
-                    chromosome.precision = self.cnn.training_cnn(chromosome.filterNumbers, chromosome.filterSizes)[0]
-                    print('Chromosome Precision', chromosome.precision)
+                    chromosome.model,chromosome.history = self.cnn.training_cnn(chromosome.filterNumbers, chromosome.filterSizes)
+                    chromosome.precision = chromosome.history.history['val_acc'][-1]
+                    self.cnn.generate_classification_report(chromosome.model)
+                    print('Chromosome Precision', round(chromosome.precision,2))
                     print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
             print('--Evaluation of chromosomes completed--')
 
@@ -108,6 +113,8 @@ class Simulator:
             print('------Generation {} individuals [Result]------'.format(current_generation))
             self.print_list_chromosomes(self.individuals)
 
+            #Keep the best model of each generation
+
             #verify the condition to stop
             if self.condition_precision is not None:
                 if self.individuals[0].precision >= self.condition_precision:
@@ -117,7 +124,8 @@ class Simulator:
                     condition = False
 
         #after loop we take just survivors and we generate a summary
-        self.individuals = self.individuals[0:self.num_survivors]
+        for individual in self.individuals[1:]:
+            self.individuals.remove(individual)
         print('\n','\n','\n','\n')
         print('SUMMARY---------------')
         print('Last Generation = {}'.format(current_generation))
@@ -126,10 +134,14 @@ class Simulator:
         print('--Filter Sizes'  ,self.individuals[0].filterSizes)
         print('--Precision' ,self.individuals[0].precision)
         print('---------------')
+        #self.cnn.generate_classification_report(self.individuals[0].model)
+        self.cnn.generate_precision_graph(self.individuals[0].history)
         print('\n','\n','\n','\n')
         print('We know there are other Bioinspired algorithms, but thanks for chosing this One :v')
         print('Esteban Romero 20151020048')
         print('Diego -- 20151020048')
+
+        sys.exit(0)
 
     #test function to test the evaluation of chromosomes
     def test_evaluate_chromosome(self,chromosome):

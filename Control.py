@@ -7,6 +7,8 @@ class Chromosome:
 		self.filterSizes = filterSizes
 		self.maxFilterSizePerLayer = maxFilterSizePerLayer
 		self.precision = -1
+		self.model = None
+		self.history = None
 
 	def set_quality(self, precision):
 		self.precision = precision
