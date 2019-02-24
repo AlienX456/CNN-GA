@@ -144,10 +144,13 @@ class CNN:
 
 #########################################################################################
 #############JUST FOR TEXT PURPOSES######################################################
+
 def test():
+    #def __init__(self, num_conv_layers, data_train_path, data_test_path, img_rows, img_cols, epoch_number, batch_size, num_classes):
     cnn = CNN(3, 'data/fashionmnist/fashion-mnist_train.csv', 'data/fashionmnist/fashion-mnist_test.csv', 28, 28, 3, 256, 10)
     cnn.configure_data()
     cnn.training_cnn([32, 64, 128], [15, 5, 1])
+    cnn.generate_classification_report()
 
 if __name__ == "__main__":
 	test()

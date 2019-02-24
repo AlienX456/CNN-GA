@@ -2,13 +2,14 @@ from Control import Control
 import random
 
 class Simulator:
-    def __init__(self,initialPoblation,control,num_survivors,condition_precision,condition_generations):
+    def __init__(self, initialPoblation, control, num_survivors, condition_precision, condition_generations, cnn):
         self.individuals = []
         self.initialPoblation = initialPoblation
         self.control = control
         self.condition_precision = condition_precision
         self.condition_generations = condition_generations
         self.num_survivors = num_survivors
+        self.cnn = cnn
 
     def simulate(self):
         print('Welcome lets start the Simulation >:v ')
@@ -47,8 +48,8 @@ class Simulator:
                 print('------------')
                 mutated.append(self.control.mutate(chromosome))
                 print('-----MUTATED-------')
-                print('Filter Numbers',mutated[-1].filterNumbers)
-                print('Filter Sizes' ,mutated[-1].filterSizes)
+                print('Filter Numbers', mutated[-1].filterNumbers)
+                print('Filter Sizes' , mutated[-1].filterSizes)
                 print('------------')
             #adding mutated chromosomes to individuals list
             #Important add both mutated and crossover after crossover or inmmediately
@@ -78,13 +79,21 @@ class Simulator:
 
 
             self.individuals = self.individuals + mutated
+
             self.individuals = self.individuals + crossovered
 
             print('\n','\n')
 
             #We start the evaluation (For now using a test function)
             for chromosome in self.individuals:
-                self.test_evaluate_chromosome(chromosome)
+                if chromosome.precision != -1:
+                    print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+                    print('Starting Evaluation of :')
+                    print('Filter Numbers', chromosome.filterNumbers)
+                    print('Filter Sizes',chromosome.filterSizes)
+                    chromosome.precision = self.cnn.training_cnn(chromosome.filterNumbers, chromosome.filterSizes)[0]
+                    print('Chromosome Precision', chromosome.precision)
+                    print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
             print('--Evaluation of chromosomes completed--')
 
             print('\n','\n')

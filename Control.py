@@ -38,7 +38,7 @@ class Control:
 
 			if current_output <= 0:
 				return None
-			
+
 		return max_sizes_list
 
 	def create_chromosome(self):
