@@ -3,7 +3,7 @@ import random
 import sys
 
 class Simulator:
-    def __init__(self, initialPoblation, control, num_survivors, condition_precision, condition_generations, cnn):
+    def __init__(self, initialPoblation, control, num_survivors, condition_precision, condition_generations, cnn, sim_per_config):
         self.individuals = []
         self.initialPoblation = initialPoblation
         self.control = control
@@ -12,6 +12,7 @@ class Simulator:
         self.num_survivors = num_survivors
         self.cnn = cnn
         self.current_best_model = None
+        self.sim_per_config = sim_per_config
 
     def simulate(self):
         print('Welcome lets start the Simulation >:v ')
@@ -90,15 +91,23 @@ class Simulator:
             #We start the evaluation (For now using a test function)
             for chromosome in self.individuals:
                 if chromosome.precision == -1:
+                    chromosome.precision = 0
+                    print('▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿▿')
                     print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
                     print('Starting Evaluation of :')
                     print('Filter Numbers', chromosome.filterNumbers)
                     print('Filter Sizes',chromosome.filterSizes)
-                    chromosome.model,chromosome.history = self.cnn.training_cnn(chromosome.filterNumbers, chromosome.filterSizes)
-                    chromosome.precision = chromosome.history.history['val_acc'][-1]
-                    self.cnn.generate_classification_report(chromosome.model)
-                    print('Chromosome Precision', round(chromosome.precision,2))
+                    model_history_score_list=[]
+                    for i in range(0,self.sim_per_config):
+                        print('---Starting ',i+1,' Evaluation of the model')
+                        model_history_score_list.append(self.cnn.training_cnn(chromosome.filterNumbers, chromosome.filterSizes))
+                        chromosome.precision = chromosome.precision + model_history_score_list[-1][2][1]/self.sim_per_config
+                    model_history_score_list.sort(key=lambda x:x[2][1],reverse=True)
+                    chromosome.model = model_history_score_list[0][0]
+                    chromosome.history = model_history_score_list[0][1]
+                    print('**Mean = ',chromosome.precision)
                     print('|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
+                    print('▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵▵')
             print('--Evaluation of chromosomes completed--')
 
             print('\n','\n')
@@ -134,7 +143,7 @@ class Simulator:
         print('--Filter Sizes'  ,self.individuals[0].filterSizes)
         print('--Precision' ,self.individuals[0].precision)
         print('---------------')
-        #self.cnn.generate_classification_report(self.individuals[0].model)
+        self.cnn.generate_classification_report(self.individuals[0].model)
         self.cnn.generate_precision_graph(self.individuals[0].history)
         print('\n','\n','\n','\n')
         print('We know there are other Bioinspired algorithms, but thanks for chosing this One :v')

@@ -94,10 +94,14 @@ class CNN:
                   validation_data=(self.X_val, self.y_val))
         score = model.evaluate(self.X_test, self.y_test, verbose=0)
 
+        print('Train accuracy', history.history['acc'])
+        print('Train loss', history.history['loss'])
+        print('Val accuracy : ',history.history['val_acc'])
+        print('Val loss : ',history.history['val_loss'])
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
 
-        return [model,history]
+        return [model,history,score]
 
     def generate_precision_graph(self, history):
         accuracy = history.history['acc']
@@ -105,6 +109,7 @@ class CNN:
         loss = history.history['loss']
         val_loss = history.history['val_loss']
         epochs = range(len(accuracy))
+        plt.figure()
         plt.plot(epochs, accuracy, 'bo', label='Training accuracy')
         plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
         plt.title('Training and validation accuracy')
@@ -127,12 +132,14 @@ class CNN:
         target_names = ["Class {}".format(i) for i in range(self.num_classes)]
         print(classification_report(y_true, predicted_classes, target_names=target_names))
 
+        plt.figure()
         for i, correct in enumerate(correct[:9]):
             plt.subplot(3, 3, i + 1)
             plt.imshow(self.X_test[correct].reshape(28, 28), cmap='gray', interpolation='none')
             plt.title("Predicted {}, Class {}".format(predicted_classes[correct], y_true[correct]))
             plt.tight_layout()
 
+        plt.figure()
         for i, incorrect in enumerate(incorrect[0:9]):
             plt.subplot(3,3,i+1)
             plt.imshow(self.X_test[incorrect].reshape(28,28), cmap='gray', interpolation='none')
