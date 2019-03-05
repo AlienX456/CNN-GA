@@ -100,7 +100,6 @@ class CNN:
         print('Val loss : ',history.history['val_loss'])
         print('Test loss:', score[0])
         print('Test accuracy:', score[1])
-
         return [model,history,score]
 
     def generate_precision_graph(self, history):
